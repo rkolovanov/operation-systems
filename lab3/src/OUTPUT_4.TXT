@@ -1,0 +1,3 @@
+The size of the available memory:  633 kilobytes  720 bytes
+The size of the extended memory: 15360 kilobytes
+Error! Code:  8

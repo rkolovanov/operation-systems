@@ -1,0 +1,679 @@
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-1
+
+
+ 0000				PROGRAM SEGMENT
+					ASSUME CS:PROGRAM, DS:PROGRAM, ES:NOTHI
+				NG, SS:NOTHING
+ 0100					ORG 100h
+				
+				; Точка входа
+ 0100				START:
+ 0100  E9 04DC R			jmp BEGIN
+				
+ 0103  54 68 65 20 73 69	AVAILABLE_MEMORY_SIZE_MESSAGE DB "The size of t
+				he available memory: $"
+       7A 65 20 6F 66 20	
+       74 68 65 20 61 76	
+       61 69 6C 61 62 6C	
+       65 20 6D 65 6D 6F	
+       72 79 3A 20 24		
+ 0126  20 20 20 20 20 6B	AVAILABLE_MEMORY_SIZE DB "     kilobytes      b
+				ytes", 0Dh, 0Ah, "$"
+       69 6C 6F 62 79 74	
+       65 73 20 20 20 20	
+       20 20 62 79 74 65	
+       73 0D 0A 24		
+ 0142  54 68 65 20 73 69	EXTENDED_MEMORY_SIZE_MESSAGE DB "The size of th
+				e extended memory: $"
+       7A 65 20 6F 66 20	
+       74 68 65 20 65 78	
+       74 65 6E 64 65 64	
+       20 6D 65 6D 6F 72	
+       79 3A 20 24		
+ 0164  20 20 20 20 20 20	EXTENDED_MEMORY_SIZE DB "      kilobytes", 0Dh,
+				 0Ah, "$"
+       6B 69 6C 6F 62 79	
+       74 65 73 0D 0A 24	
+ 0176  0D 0A 4D 43 42 20	MCB_ADDRESS_MESSAGE DB 0Dh, 0Ah, "MCB address: 
+				$"
+       61 64 64 72 65 73	
+       73 3A 20 24		
+ 0186  20 20 20 20 0D 0A	MCB_ADDRESS DB "    ", 0Dh, 0Ah, "$"
+       24			
+ 018D  4D 43 42 20 74 79	MCB_TYPE_MESSAGE DB "MCB type: $"
+       70 65 3A 20 24		
+ 0198  20 20 0D 0A 24		MCB_TYPE DB "  ", 0Dh, 0Ah, "$"
+ 019D  42 6C 6F 63 6B 20	MEMORY_BLOCK_OWNER_MESSAGE DB "Block owner: $"
+       6F 77 6E 65 72 3A	
+       20 24			
+ 01AB  20 20 20 20 0D 0A	MEMORY_BLOCK_OWNER DB "    ", 0Dh, 0Ah, "$"
+       24			
+ 01B2  46 72 65 65 0D 0A	MEMORY_BLOCK_OWNER_1 DB "Free", 0Dh, 0Ah, "$"
+       24			
+ 01B9  4F 53 20 58 4D 53	MEMORY_BLOCK_OWNER_2 DB "OS XMS UMB driver", 0D
+				h, 0Ah, "$"
+       20 55 4D 42 20 64	
+       72 69 76 65 72 0D	
+       0A 24			
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-2
+
+
+ 01CD  45 78 63 6C 75 64	MEMORY_BLOCK_OWNER_3 DB "Excluded upper driver 
+				memory", 0Dh, 0Ah, "$"
+       65 64 20 75 70 70	
+       65 72 20 64 72 69	
+       76 65 72 20 6D 65	
+       6D 6F 72 79 0D 0A	
+       24			
+ 01EC  4D 53 20 44 4F 53	MEMORY_BLOCK_OWNER_4 DB "MS DOS", 0Dh, 0Ah, "$"
+       0D 0A 24			
+ 01F5  33 38 36 4D 41 58	MEMORY_BLOCK_OWNER_5 DB "386MAX UMB control blo
+				ck", 0Dh, 0Ah, "$"
+       20 55 4D 42 20 63	
+       6F 6E 74 72 6F 6C	
+       20 62 6C 6F 63 6B	
+       0D 0A 24			
+ 0210  33 38 36 4D 41 58	MEMORY_BLOCK_OWNER_6 DB "386MAX blocked", 0Dh, 
+				0Ah, "$"
+       20 62 6C 6F 63 6B	
+       65 64 0D 0A 24		
+ 0221  33 38 36 4D 41 58	MEMORY_BLOCK_OWNER_7 DB "386MAX UMB", 0Dh, 0Ah,
+				 "$"
+       20 55 4D 42 0D 0A	
+       24			
+ 022E  42 6C 6F 63 6B 20	BLOCK_SIZE_MESSAGE DB "Block size: $"
+       73 69 7A 65 3A 20	
+       24			
+ 023B  20 20 20 20 20 6B	BLOCK_SIZE DB "     kilobytes      bytes", 0Dh,
+				 0Ah, "$"
+       69 6C 6F 62 79 74	
+       65 73 20 20 20 20	
+       20 20 62 79 74 65	
+       73 0D 0A 24		
+ 0257  52 65 73 65 72 76	RESERVED_MESSAGE DB "Reserved: $"
+       65 64 3A 20 24		
+ 0262  20 20 20 20 20 20	RESERVED DB "           ", 0Dh, 0Ah, "$"
+       20 20 20 20 20 0D	
+       0A 24			
+ 0270  45 72 72 6F 72 21	ERROR_MESSAGE DB "Error! Code:   ", 0Dh, 0Ah, "
+				$"
+       20 43 6F 64 65 3A	
+       20 20 20 0D 0A 24	
+				
+				; Перевод тетрады (4-ех мла�
+				�ших байтов AL) в 16-ичную СС 
+				и ее представление в виде 
+				символа
+ 0282				TETR_TO_HEX PROC NEAR
+ 0282  24 0F				and al, 0Fh
+ 0284  3C 09				cmp al, 09
+ 0286  76 02				jbe next
+ 0288  04 07				add al, 07
+ 028A				next:
+ 028A  04 30				add al, 30h
+ 028C  C3				ret
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-3
+
+
+ 028D				TETR_TO_HEX ENDP
+				
+				; Перевод байта AL в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 028D				BYTE_TO_HEX PROC NEAR
+ 028D  51				push cx
+ 028E  8A E0				mov ah, al
+ 0290  E8 0282 R			call TETR_TO_HEX
+ 0293  86 C4				xchg al, ah
+ 0295  B1 04				mov cl, 4
+ 0297  D2 E8				shr al, cl
+ 0299  E8 0282 R			call TETR_TO_HEX
+ 029C  59				pop cx
+ 029D  C3				ret
+ 029E				BYTE_TO_HEX ENDP
+				
+				; Перевод слова AX в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 029E				WORD_TO_HEX PROC NEAR
+ 029E  53				push bx
+ 029F  8A FC				mov bh, ah
+ 02A1  E8 028D R			call BYTE_TO_HEX
+ 02A4  88 25				mov [di], ah
+ 02A6  4F				dec di
+ 02A7  88 05				mov [di], al
+ 02A9  4F				dec di
+ 02AA  8A C7				mov AL, bh
+ 02AC  E8 028D R			call BYTE_TO_HEX
+ 02AF  88 25				mov [di], ah
+ 02B1  4F				dec di
+ 02B2  88 05				mov [di], al
+ 02B4  5B				pop bx
+ 02B5  C3				ret
+ 02B6				WORD_TO_HEX ENDP
+				
+				; Перевод байта AL в 10-ичную
+				 СС и его представление в �
+				�иде символов
+ 02B6				BYTE_TO_DEC PROC NEAR
+ 02B6  51				push cx
+ 02B7  52				push dx
+ 02B8  32 E4				xor ah, ah
+ 02BA  33 D2				xor dx, dx
+ 02BC  B9 000A				mov cx, 10
+ 02BF				loop_bd:
+ 02BF  F7 F1				div cx
+ 02C1  80 CA 30				or dl,30h
+ 02C4  88 14				mov [si], dl
+ 02C6  4E				dec si
+ 02C7  33 D2				xor dx, dx
+ 02C9  3D 000A				cmp ax, 10
+ 02CC  73 F1				jae loop_bd
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-4
+
+
+ 02CE  3C 00				cmp al, 00h
+ 02D0  74 04				je end_l
+ 02D2  0C 30				or al, 30h
+ 02D4  88 04				mov [si], al
+ 02D6				end_l:
+ 02D6  5A				pop dx
+ 02D7  59				pop cx
+ 02D8  C3				ret
+ 02D9				BYTE_TO_DEC ENDP
+				
+				; Перевод слова AX в 10-ичную
+				 СС и его представление в �
+				�иде символов
+ 02D9				WORD_TO_DEC PROC NEAR
+ 02D9  51				push cx
+ 02DA  52				push dx
+ 02DB  33 D2				xor dx, dx
+ 02DD  B9 000A				mov cx, 10
+ 02E0				loop_bd_2:
+ 02E0  F7 F1				div cx
+ 02E2  80 CA 30				or dl, 30h
+ 02E5  88 14				mov [si], dl
+ 02E7  4E				dec si
+ 02E8  33 D2				xor dx, dx
+ 02EA  3D 000A				cmp ax, 10
+ 02ED  73 F1				jae loop_bd_2
+ 02EF  3C 00				cmp al, 00h
+ 02F1  74 04				je end_l_2
+ 02F3  0C 30				or al, 30h
+ 02F5  88 04				mov [si], al
+ 02F7				end_l_2:
+ 02F7  5A				pop dx
+ 02F8  59				pop cx
+ 02F9  C3				ret
+ 02FA				WORD_TO_DEC ENDP
+				
+				; Вызывает функцию вывода 
+				строки на экран
+ 02FA				PRINT PROC NEAR
+ 02FA  50				push ax
+ 02FB  B4 09				mov ah, 09h
+ 02FD  CD 21				int 21h
+ 02FF  58				pop ax
+ 0300  C3				ret
+ 0301				PRINT ENDP
+				
+				; Очистить поле размера MCB 
+				блока
+ 0301				CLEAR_BLOCK_SIZE PROC NEAR
+ 0301  51				push cx
+ 0302  56				push si
+					
+ 0303  B9 0004				mov cx, 4
+ 0306				loop_start:
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-5
+
+
+ 0306  8B F1				mov si, cx
+ 0308  C6 84 024A R 20			mov [BLOCK_SIZE + si + 15], ' '
+ 030D  C6 84 023B R 20			mov [BLOCK_SIZE + si], ' '
+ 0312  E2 F2				loop loop_start
+					
+ 0314  5E				pop si
+ 0315  59				pop cx
+					
+ 0316  C3				ret
+ 0317				CLEAR_BLOCK_SIZE ENDP
+				
+				; Вывести размер доступно�
+				� памяти
+ 0317				PRINT_AVAILABLE_MEMORY_SIZE PROC NEAR
+ 0317  50				push ax
+ 0318  53				push bx
+ 0319  51				push cx
+ 031A  52				push dx
+ 031B  56				push si
+				
+ 031C  B4 4A				mov ah, 4Ah
+ 031E  BB FFFF			 	mov bx, 0FFFFh
+ 0321  CD 21			 	int 21h
+					
+ 0323  8B C3				mov ax, bx
+ 0325  83 E3 3F				and bx, 0111111b
+ 0328  B1 06				mov cl, 6
+ 032A  D3 E8				shr ax, cl
+ 032C  B1 04				mov cl, 4
+ 032E  D3 E3				shl bx, cl
+ 0330  BE 0129 R			mov si, offset AVAILABLE_MEMORY_SIZE + 
+				3
+ 0333  E8 02D9 R			call WORD_TO_DEC
+ 0336  8B C3				mov ax, bx
+ 0338  BE 0138 R			mov si, offset AVAILABLE_MEMORY_SIZE + 
+				18
+ 033B  E8 02D9 R			call WORD_TO_DEC
+				
+ 033E  BA 0103 R			mov dx, offset AVAILABLE_MEMORY_SIZE_ME
+				SSAGE
+ 0341  E8 02FA R			call PRINT
+ 0344  BA 0126 R			mov dx, offset AVAILABLE_MEMORY_SIZE
+ 0347  E8 02FA R			call PRINT
+				
+ 034A  5E				pop si
+ 034B  5A				pop dx
+ 034C  59				pop cx
+ 034D  5B				pop bx
+ 034E  58				pop ax
+				
+ 034F  C3			 	ret
+ 0350				PRINT_AVAILABLE_MEMORY_SIZE ENDP
+				
+				; Вывести размер расширен�
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-6
+
+
+				�ой памяти
+ 0350				PRINT_EXTENDED_MEMORY_SIZE PROC NEAR
+ 0350  50				push ax
+ 0351  53				push bx
+ 0352  51				push cx
+ 0353  52				push dx
+ 0354  56				push si
+				
+ 0355  B0 30				mov al, 30h
+ 0357  E6 70				out 70h, al
+ 0359  E4 71				in al, 71h
+ 035B  8A D8				mov bl, al
+ 035D  B0 31				mov al, 31h
+ 035F  E6 70				out 70h, al
+ 0361  E4 71				in al, 71h
+ 0363  8A E0				mov ah, al
+ 0365  8A C3				mov al, bl
+				
+ 0367  BE 0168 R			mov si, offset EXTENDED_MEMORY_SIZE + 4
+ 036A  E8 02D9 R			call WORD_TO_DEC
+				
+ 036D  BA 0142 R			mov dx, offset EXTENDED_MEMORY_SIZE_MES
+				SAGE
+ 0370  E8 02FA R			call PRINT
+ 0373  BA 0164 R			mov dx, offset EXTENDED_MEMORY_SIZE
+ 0376  E8 02FA R			call PRINT
+					
+ 0379  5E				pop si
+ 037A  5A				pop dx
+ 037B  59				pop cx
+ 037C  5B				pop bx
+ 037D  58				pop ax
+				
+ 037E  C3				ret
+ 037F				PRINT_EXTENDED_MEMORY_SIZE ENDP
+				
+				; Вывести список MCB
+ 037F				PRINT_MCB_LIST PROC NEAR
+ 037F  50				push ax
+ 0380  53				push bx
+ 0381  52				push dx
+ 0382  06				push es
+					
+ 0383  B4 52				mov ah, 52h
+ 0385  CD 21				int 21h
+ 0387  E8 049F R			call CHECK_AND_PRINT_ERROR
+					
+ 038A  26: 8B 47 FE			mov ax, es:[bx-2]
+ 038E  8E C0				mov es, ax
+				
+ 0390				read_block:
+ 0390  E8 03AE R			call READ_AND_PRINT_MCB
+				
+ 0393  26: A0 0000			mov al, es:[0]
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-7
+
+
+ 0397  8C C3				mov bx, es
+ 0399  26: 8B 16 0003			mov dx, es:[3]
+ 039E  83 C2 01				add dx, 1
+ 03A1  03 DA				add bx, dx
+ 03A3  8E C3				mov es, bx
+					
+ 03A5  3C 4D				cmp al, 4Dh
+ 03A7  74 E7				je read_block
+				
+ 03A9  07				pop es
+ 03AA  5A				pop dx
+ 03AB  5B				pop bx
+ 03AC  58				pop ax
+				
+ 03AD  C3				ret
+ 03AE				PRINT_MCB_LIST ENDP
+				
+				; Вывести MCB на экран
+ 03AE				READ_AND_PRINT_MCB PROC NEAR
+ 03AE  50				push ax
+ 03AF  51				push cx
+ 03B0  52				push dx
+ 03B1  57				push di
+ 03B2  56				push si
+				
+ 03B3  8C C0				mov ax, es
+ 03B5  BF 0189 R			mov di, offset MCB_ADDRESS + 3
+ 03B8  E8 029E R			call WORD_TO_HEX
+				
+ 03BB  BA 0176 R			mov dx, offset MCB_ADDRESS_MESSAGE
+ 03BE  E8 02FA R			call PRINT
+ 03C1  BA 0186 R			mov dx, offset MCB_ADDRESS
+ 03C4  E8 02FA R			call PRINT
+				
+ 03C7  32 E4				xor ah, ah
+ 03C9  26: A0 0000			mov al, es:[0]
+ 03CD  E8 028D R			call BYTE_TO_HEX
+ 03D0  A2 0198 R			mov ds:[MCB_TYPE], al
+ 03D3  88 26 0199 R			mov ds:[MCB_TYPE+1], ah
+				
+ 03D7  BA 018D R		 	mov dx, offset MCB_TYPE_MESSAGE
+ 03DA  E8 02FA R			call PRINT
+ 03DD  BA 0198 R			mov dx, offset MCB_TYPE
+ 03E0  E8 02FA R			call PRINT
+				
+ 03E3  BA 019D R			mov dx, offset MEMORY_BLOCK_OWNER_MESSA
+				GE
+ 03E6  E8 02FA R			call PRINT
+				
+ 03E9  26: A1 0001			mov ax, es:[1]
+ 03ED  3D 0000				cmp ax, 0000h
+ 03F0  74 21				je owner1
+ 03F2  3D 0006				cmp ax, 0006h
+ 03F5  74 22				je owner2
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-8
+
+
+ 03F7  3D 0007				cmp ax, 0007h
+ 03FA  74 23				je owner3
+ 03FC  3D 0008				cmp ax, 0008h
+ 03FF  74 24				je owner4
+ 0401  3D FFFA				cmp ax, 0FFFAh
+ 0404  74 25				je owner5
+ 0406  3D FFFD				cmp ax, 0FFFDh
+ 0409  74 26				je owner6
+ 040B  3D FFFE				cmp ax, 0FFFEh
+ 040E  74 27				je owner7
+ 0410  EB 2B 90				jmp owner_default
+ 0413				owner1:
+ 0413  BA 01B2 R			mov dx, offset MEMORY_BLOCK_OWNER_1
+ 0416  EB 2E 90				jmp print_owner
+ 0419				owner2:
+ 0419  BA 01B9 R			mov dx, offset MEMORY_BLOCK_OWNER_2
+ 041C  EB 28 90				jmp print_owner
+ 041F				owner3:
+ 041F  BA 01CD R			mov dx, offset MEMORY_BLOCK_OWNER_3
+ 0422  EB 22 90				jmp print_owner
+ 0425				owner4:
+ 0425  BA 01EC R			mov dx, offset MEMORY_BLOCK_OWNER_4
+ 0428  EB 1C 90				jmp print_owner
+ 042B				owner5:
+ 042B  BA 01F5 R			mov dx, offset MEMORY_BLOCK_OWNER_5
+ 042E  EB 16 90				jmp print_owner
+ 0431				owner6:
+ 0431  BA 0210 R			mov dx, offset MEMORY_BLOCK_OWNER_6
+ 0434  EB 10 90				jmp print_owner
+ 0437				owner7:
+ 0437  BA 0221 R			mov dx, offset MEMORY_BLOCK_OWNER_7
+ 043A  EB 0A 90				jmp print_owner
+ 043D				owner_default:
+ 043D  BF 01AE R			mov di, offset MEMORY_BLOCK_OWNER + 3
+ 0440  E8 029E R			call WORD_TO_HEX
+ 0443  BA 01AB R			mov dx, offset MEMORY_BLOCK_OWNER
+				
+ 0446				print_owner:
+ 0446  E8 02FA R			call PRINT
+				
+ 0449  26: A1 0003			mov ax, es:[3]
+ 044D  8B D8				mov bx, ax
+ 044F  83 E3 3F				and bx, 0111111b
+ 0452  B1 06				mov cl, 6
+ 0454  D3 E8				shr ax, cl
+ 0456  B1 04				mov cl, 4
+ 0458  D3 E3				shl bx, cl
+ 045A  BE 023E R			mov si, offset BLOCK_SIZE + 3
+ 045D  E8 02D9 R			call WORD_TO_DEC
+ 0460  8B C3				mov ax, bx
+ 0462  BE 024D R			mov si, offset BLOCK_SIZE + 18
+ 0465  E8 02D9 R			call WORD_TO_DEC
+					
+ 0468  BA 022E R			mov dx, offset BLOCK_SIZE_MESSAGE
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-9
+
+
+ 046B  E8 02FA R			call PRINT
+ 046E  BA 023B R			mov dx, offset BLOCK_SIZE
+ 0471  E8 02FA R			call PRINT
+					
+ 0474  E8 0301 R			call CLEAR_BLOCK_SIZE
+				
+ 0477  BE 0262 R			mov si, offset RESERVED
+ 047A  BF 0005				mov di, 5
+ 047D  B9 000B				mov cx, 11
+				
+ 0480				read_reserved_bytes:
+ 0480  26: 8A 05			mov al, es:[di]
+ 0483  88 04				mov byte ptr ds:[si], al
+				
+ 0485  83 C6 01				add si, 1
+ 0488  83 C7 01				add di, 1
+ 048B  E2 F3				loop read_reserved_bytes
+				
+ 048D  BA 0257 R			mov dx, offset RESERVED_MESSAGE
+ 0490  E8 02FA R			call PRINT
+ 0493  BA 0262 R			mov dx, offset RESERVED
+ 0496  E8 02FA R			call PRINT
+				
+ 0499  5E				pop si
+ 049A  5F				pop di
+ 049B  5A				pop dx
+ 049C  59				pop cx
+ 049D  58				pop ax
+				
+ 049E  C3				ret
+ 049F				READ_AND_PRINT_MCB ENDP
+				
+				; Выводит ошибку на экран �
+				� выходит из программы
+ 049F				CHECK_AND_PRINT_ERROR PROC NEAR
+ 049F  50				push ax
+					
+ 04A0  9F				lahf
+ 04A1  80 E4 01				and ah, 01b
+ 04A4  80 FC 00				cmp ah, 0
+ 04A7  74 13				je no_error
+					
+ 04A9  58				pop ax
+ 04AA  BE 027E R			mov si, offset ERROR_MESSAGE + 14
+ 04AD  E8 02D9 R			call WORD_TO_DEC
+					
+ 04B0  BA 0270 R			mov dx, offset ERROR_MESSAGE
+ 04B3  E8 02FA R			call PRINT
+					
+ 04B6  32 C0				xor al, al
+ 04B8  B4 4C				mov ah, 4Ch
+ 04BA  CD 21				int 21h
+					
+ 04BC				no_error:
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Page     1-10
+
+
+ 04BC  58				pop ax 
+ 04BD  C3				ret
+ 04BE				CHECK_AND_PRINT_ERROR ENDP
+				
+				; Освобождает свободную п�
+				�мять
+ 04BE				FREE_MEMORY PROC NEAR
+ 04BE  50				push ax
+ 04BF  53				push bx
+					
+ 04C0  B4 4A				mov ah, 4Ah
+ 04C2  BB 0100			 	mov bx, 100h
+ 04C5  CD 21			 	int 21h
+ 04C7  E8 049F R			call CHECK_AND_PRINT_ERROR
+					
+ 04CA  5B				pop bx
+ 04CB  58				pop ax
+					
+ 04CC  C3				ret
+ 04CD				FREE_MEMORY ENDP
+				
+				; Выделяет для программы 64
+				 КБ памяти
+ 04CD				ALLOC_MEMORY PROC NEAR
+ 04CD  50				push ax
+ 04CE  53				push bx
+					
+ 04CF  B4 48				mov ah, 48h
+ 04D1  BB 1000			 	mov bx, 1000h
+ 04D4  CD 21			 	int 21h
+ 04D6  E8 049F R			call CHECK_AND_PRINT_ERROR
+					
+ 04D9  5B				pop bx
+ 04DA  58				pop ax
+					
+ 04DB  C3				ret
+ 04DC				ALLOC_MEMORY ENDP
+				
+ 04DC				BEGIN:
+ 04DC  E8 0317 R			call PRINT_AVAILABLE_MEMORY_SIZE
+ 04DF  E8 0350 R			call PRINT_EXTENDED_MEMORY_SIZE
+ 04E2  E8 037F R			call PRINT_MCB_LIST
+				
+ 04E5				EXIT:
+ 04E5  32 C0				xor al, al
+ 04E7  B4 4C				mov ah, 4Ch
+ 04E9  CD 21				int 21h
+					
+ 04EB				PROGRAM ENDS
+				
+				END START
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+PROGRAM  . . . . . . . . . . . .  	04EB	PARA	NONE	
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+ALLOC_MEMORY . . . . . . . . . .  	N PROC	04CD	PROGRAM	Length = 000F
+AVAILABLE_MEMORY_SIZE  . . . . .  	L BYTE	0126	PROGRAM
+AVAILABLE_MEMORY_SIZE_MESSAGE  .  	L BYTE	0103	PROGRAM
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	04DC	PROGRAM
+BLOCK_SIZE . . . . . . . . . . .  	L BYTE	023B	PROGRAM
+BLOCK_SIZE_MESSAGE . . . . . . .  	L BYTE	022E	PROGRAM
+BYTE_TO_DEC  . . . . . . . . . .  	N PROC	02B6	PROGRAM	Length = 0023
+BYTE_TO_HEX  . . . . . . . . . .  	N PROC	028D	PROGRAM	Length = 0011
+
+CHECK_AND_PRINT_ERROR  . . . . .  	N PROC	049F	PROGRAM	Length = 001F
+CLEAR_BLOCK_SIZE . . . . . . . .  	N PROC	0301	PROGRAM	Length = 0016
+
+END_L  . . . . . . . . . . . . .  	L NEAR	02D6	PROGRAM
+END_L_2  . . . . . . . . . . . .  	L NEAR	02F7	PROGRAM
+ERROR_MESSAGE  . . . . . . . . .  	L BYTE	0270	PROGRAM
+EXIT . . . . . . . . . . . . . .  	L NEAR	04E5	PROGRAM
+EXTENDED_MEMORY_SIZE . . . . . .  	L BYTE	0164	PROGRAM
+EXTENDED_MEMORY_SIZE_MESSAGE . .  	L BYTE	0142	PROGRAM
+
+FREE_MEMORY  . . . . . . . . . .  	N PROC	04BE	PROGRAM	Length = 000F
+
+LOOP_BD  . . . . . . . . . . . .  	L NEAR	02BF	PROGRAM
+LOOP_BD_2  . . . . . . . . . . .  	L NEAR	02E0	PROGRAM
+LOOP_START . . . . . . . . . . .  	L NEAR	0306	PROGRAM
+
+MCB_ADDRESS  . . . . . . . . . .  	L BYTE	0186	PROGRAM
+MCB_ADDRESS_MESSAGE  . . . . . .  	L BYTE	0176	PROGRAM
+MCB_TYPE . . . . . . . . . . . .  	L BYTE	0198	PROGRAM
+MCB_TYPE_MESSAGE . . . . . . . .  	L BYTE	018D	PROGRAM
+MEMORY_BLOCK_OWNER . . . . . . .  	L BYTE	01AB	PROGRAM
+MEMORY_BLOCK_OWNER_1 . . . . . .  	L BYTE	01B2	PROGRAM
+MEMORY_BLOCK_OWNER_2 . . . . . .  	L BYTE	01B9	PROGRAM
+MEMORY_BLOCK_OWNER_3 . . . . . .  	L BYTE	01CD	PROGRAM
+MEMORY_BLOCK_OWNER_4 . . . . . .  	L BYTE	01EC	PROGRAM
+MEMORY_BLOCK_OWNER_5 . . . . . .  	L BYTE	01F5	PROGRAM
+MEMORY_BLOCK_OWNER_6 . . . . . .  	L BYTE	0210	PROGRAM
+MEMORY_BLOCK_OWNER_7 . . . . . .  	L BYTE	0221	PROGRAM
+MEMORY_BLOCK_OWNER_MESSAGE . . .  	L BYTE	019D	PROGRAM
+
+NEXT . . . . . . . . . . . . . .  	L NEAR	028A	PROGRAM
+NO_ERROR . . . . . . . . . . . .  	L NEAR	04BC	PROGRAM
+
+OWNER1 . . . . . . . . . . . . .  	L NEAR	0413	PROGRAM
+Microsoft (R) Macro Assembler Version 5.10                  3/10/21 04:54:08
+                                                             Symbols-2
+
+
+OWNER2 . . . . . . . . . . . . .  	L NEAR	0419	PROGRAM
+OWNER3 . . . . . . . . . . . . .  	L NEAR	041F	PROGRAM
+OWNER4 . . . . . . . . . . . . .  	L NEAR	0425	PROGRAM
+OWNER5 . . . . . . . . . . . . .  	L NEAR	042B	PROGRAM
+OWNER6 . . . . . . . . . . . . .  	L NEAR	0431	PROGRAM
+OWNER7 . . . . . . . . . . . . .  	L NEAR	0437	PROGRAM
+OWNER_DEFAULT  . . . . . . . . .  	L NEAR	043D	PROGRAM
+
+PRINT  . . . . . . . . . . . . .  	N PROC	02FA	PROGRAM	Length = 0007
+PRINT_AVAILABLE_MEMORY_SIZE  . .  	N PROC	0317	PROGRAM	Length = 0039
+PRINT_EXTENDED_MEMORY_SIZE . . .  	N PROC	0350	PROGRAM	Length = 002F
+PRINT_MCB_LIST . . . . . . . . .  	N PROC	037F	PROGRAM	Length = 002F
+PRINT_OWNER  . . . . . . . . . .  	L NEAR	0446	PROGRAM
+
+READ_AND_PRINT_MCB . . . . . . .  	N PROC	03AE	PROGRAM	Length = 00F1
+READ_BLOCK . . . . . . . . . . .  	L NEAR	0390	PROGRAM
+READ_RESERVED_BYTES  . . . . . .  	L NEAR	0480	PROGRAM
+RESERVED . . . . . . . . . . . .  	L BYTE	0262	PROGRAM
+RESERVED_MESSAGE . . . . . . . .  	L BYTE	0257	PROGRAM
+
+START  . . . . . . . . . . . . .  	L NEAR	0100	PROGRAM
+
+TETR_TO_HEX  . . . . . . . . . .  	N PROC	0282	PROGRAM	Length = 000B
+
+WORD_TO_DEC  . . . . . . . . . .  	N PROC	02D9	PROGRAM	Length = 0021
+WORD_TO_HEX  . . . . . . . . . .  	N PROC	029E	PROGRAM	Length = 0018
+
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@FILENAME  . . . . . . . . . . .  	TEXT  lab3_1		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    449 Source  Lines
+    449 Total   Lines
+     63 Symbols
+
+  47808 + 441021 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

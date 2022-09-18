@@ -1,0 +1,425 @@
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-1
+
+
+				DOSSEG
+				.model small
+				.stack 100h
+				
+				.data
+ 0000  50 43 20 74 79 70	PC_TYPE_MESSAGE DB 'PC type: $'
+       65 3A 20 24		
+ 000A  50 43 0D 0A 24		PC_TYPE_1 DB 'PC', 0DH, 0AH, '$'
+ 000F  50 43 2F 58 54 0D	PC_TYPE_2 DB 'PC/XT', 0DH, 0AH, '$'
+       0A 24			
+ 0017  41 54 0D 0A 24		PC_TYPE_3 DB 'AT', 0DH, 0AH, '$'
+ 001C  50 53 32 20 6D 6F	PC_TYPE_4 DB 'PS2 model 30', 0DH, 0AH, '$'
+       64 65 6C 20 33 30	
+       0D 0A 24			
+ 002B  50 53 32 20 6D 6F	PC_TYPE_5 DB 'PS2 model 50 or 60', 0DH, 0AH, '$
+				'
+       64 65 6C 20 35 30	
+       20 6F 72 20 36 30	
+       0D 0A 24			
+ 0040  50 53 32 20 6D 6F	PC_TYPE_6 DB 'PS2 model 80', 0DH, 0AH, '$'
+       64 65 6C 20 38 30	
+       0D 0A 24			
+ 004F  50 43 6A 72 0D 0A	PC_TYPE_7 DB 'PCjr', 0DH, 0AH, '$'
+       24			
+ 0056  50 43 20 43 6F 6E	PC_TYPE_8 DB 'PC Convertible', 0DH, 0AH, '$'
+       76 65 72 74 69 62	
+       6C 65 0D 0A 24		
+ 0067  20 20 0D 0A 24		PC_TYPE_UNKNOWN DB '  ', 0DH, 0AH, '$'
+ 006C  4F 53 20 76 65 72	OS_VERSION_MESSAGE DB 'OS version: $'
+       73 69 6F 6E 3A 20	
+       24			
+ 0079  20 20 2E 20 20 0D	OS_VERSION DB '  .  ', 0DH, 0AH, '$'
+       0A 24			
+ 0081  4F 45 4D 20 73 65	OEM_NUMBER_MESSAGE DB 'OEM serial number: $'
+       72 69 61 6C 20 6E	
+       75 6D 62 65 72 3A	
+       20 24			
+ 0095  20 20 0D 0A 24		OEM_NUMBER DB '  ', 0DH, 0AH, '$'
+ 009A  55 73 65 72 20 73	USER_NUMBER_MESSAGE DB 'User serial number: $'
+       65 72 69 61 6C 20	
+       6E 75 6D 62 65 72	
+       3A 20 24			
+ 00AF  20 20 20 20 20 20	USER_NUMBER DB '      ', 0DH, 0AH, '$'
+       0D 0A 24			
+				
+				.code
+				; Точка входа
+ 0000				START:
+ 0000  E9 0147 R			jmp BEGIN
+					
+				; Перевод тетрады (4-ех мла�
+				�ших байтов AL) в 16-ичную СС 
+				и ее представление в виде 
+				символа
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-2
+
+
+ 0003				TETR_TO_HEX PROC NEAR
+ 0003  24 0F				and al, 0Fh
+ 0005  3C 09				cmp al, 09
+ 0007  76 02				jbe next
+ 0009  04 07				add al, 07
+ 000B				next:
+ 000B  04 30				add al, 30h
+ 000D  C3				ret
+ 000E				TETR_TO_HEX ENDP
+				
+				; Перевод байта AL в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 000E				BYTE_TO_HEX PROC NEAR
+ 000E  51				push cx
+ 000F  8A E0				mov ah, al
+ 0011  E8 0003 R			call TETR_TO_HEX
+ 0014  86 C4				xchg al, ah
+ 0016  B1 04				mov cl, 4
+ 0018  D2 E8				shr al, cl
+ 001A  E8 0003 R			call TETR_TO_HEX
+ 001D  59				pop cx
+ 001E  C3				ret
+ 001F				BYTE_TO_HEX ENDP
+				
+				; Перевод слова AX в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 001F				WORD_TO_HEX PROC NEAR
+ 001F  53				push bx
+ 0020  8A FC				mov bh, ah
+ 0022  E8 000E R			call BYTE_TO_HEX
+ 0025  88 25				mov [di], ah
+ 0027  4F				dec di
+ 0028  88 05				mov [di], al
+ 002A  4F				dec di
+ 002B  8A C7				mov AL, bh
+ 002D  E8 000E R			call BYTE_TO_HEX
+ 0030  88 25				mov [di], ah
+ 0032  4F				dec di
+ 0033  88 05				mov [di], al
+ 0035  5B				pop bx
+ 0036  C3				ret
+ 0037				WORD_TO_HEX ENDP
+				
+				; Перевод байта AL в 10-ичную
+				 СС и его представление в �
+				�иде символов
+ 0037				BYTE_TO_DEC PROC NEAR
+ 0037  51				push cx
+ 0038  52				push dx
+ 0039  32 E4				xor ah, ah
+ 003B  33 D2				xor dx, dx
+ 003D  B9 000A				mov cx, 10
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-3
+
+
+ 0040				loop_bd:
+ 0040  F7 F1				div cx
+ 0042  80 CA 30				or dl,30h
+ 0045  88 14				mov [si], dl
+ 0047  4E				dec si
+ 0048  33 D2				xor dx, dx
+ 004A  3D 000A				cmp ax, 10
+ 004D  73 F1				jae loop_bd
+ 004F  3C 00				cmp al, 00h
+ 0051  74 04				je end_l
+ 0053  0C 30				or al, 30h
+ 0055  88 04				mov [si], al
+ 0057				end_l:
+ 0057  5A				pop dx
+ 0058  59				pop cx
+ 0059  C3				ret
+ 005A				BYTE_TO_DEC ENDP
+				
+				; Вызывает функцию вывода 
+				строки на экран
+ 005A				PRINT PROC NEAR
+ 005A  50				push ax
+ 005B  B4 09				mov ah, 09h
+ 005D  CD 21				int 21h
+ 005F  58				pop ax
+ 0060  C3				ret
+ 0061				PRINT ENDP
+				
+				; Выводит на экран тип ПК
+ 0061				PRINT_PC_TYPE PROC NEAR
+					; Сохраняем значения �
+				�егистров
+ 0061  50				push ax
+ 0062  53				push bx
+ 0063  52				push dx
+ 0064  06				push es
+					; Получаем байт, содер
+				жащий информацию о типе П�
+				�
+ 0065  B8 F000				mov ax, 0F000h
+ 0068  8E C0				mov es, ax
+ 006A  26: A0 FFFE			mov al, es:[0FFFEh]
+					; Выводим на экран пер
+				вую часть строки с информ�
+				�цией о типе ПК
+ 006E  BA 0000 R			mov dx, offset PC_TYPE_MESSAGE
+ 0071  E8 005A R			call PRINT
+					; Сравниваем значение
+				 байта со значениями изве�
+				�тных типов ПК
+ 0074  3C FF				cmp al, 0FFh
+ 0076  74 23				je type_1
+ 0078  3C FE				cmp al, 0FEh
+ 007A  74 25				je type_2
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-4
+
+
+ 007C  3C FD				cmp al, 0FDh
+ 007E  74 21				je type_2
+ 0080  3C FC				cmp al, 0FCh
+ 0082  74 23				je type_3
+ 0084  3C FA				cmp al, 0FAh
+ 0086  74 25				je type_4
+ 0088  3C FC				cmp al, 0FCh
+ 008A  74 27				je type_5
+ 008C  3C F8				cmp al, 0F8h
+ 008E  74 29				je type_6
+ 0090  3C FD				cmp al, 0FDh
+ 0092  74 2B				je type_7
+ 0094  3C F9				cmp al, 0F9h
+ 0096  74 2D				je type_8
+ 0098  EB 31 90				jmp type_unknown ; В случае, е�
+				�ли значения байта не совп
+				адает со значениями извес
+				тных типов ПК
+					; Помещаем смещение с�
+				�роки с соотвествующим ти�
+				�ом в регист dx
+ 009B				type_1:
+ 009B  BA 000A R			mov dx, offset PC_TYPE_1
+ 009E  EB 38 90				jmp print_type
+ 00A1				type_2:
+ 00A1  BA 000F R			mov dx, offset PC_TYPE_2
+ 00A4  EB 32 90				jmp print_type
+ 00A7				type_3:
+ 00A7  BA 0017 R			mov dx, offset PC_TYPE_3
+ 00AA  EB 2C 90				jmp print_type
+ 00AD				type_4:
+ 00AD  BA 001C R			mov dx, offset PC_TYPE_4
+ 00B0  EB 26 90				jmp print_type
+ 00B3				type_5:
+ 00B3  BA 002B R			mov dx, offset PC_TYPE_5
+ 00B6  EB 20 90				jmp print_type
+ 00B9				type_6:
+ 00B9  BA 0040 R			mov dx, offset PC_TYPE_6
+ 00BC  EB 1A 90				jmp print_type
+ 00BF				type_7:
+ 00BF  BA 004F R			mov dx, offset PC_TYPE_7
+ 00C2  EB 14 90				jmp print_type
+ 00C5				type_8:
+ 00C5  BA 0056 R			mov dx, offset PC_TYPE_8
+ 00C8  EB 0E 90				jmp print_type
+ 00CB				type_unknown:
+					; Получаем значение б�
+				�йта в виде символов и зап�
+				�сываем их в строку PC_TYPE_UNKN
+				OWN
+ 00CB  E8 000E R			call BYTE_TO_HEX
+ 00CE  BB 0067 R			mov bx, offset PC_TYPE_UNKNOWN
+ 00D1  88 07				mov [bx], al
+ 00D3  88 67 01				mov [bx+1], ah
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-5
+
+
+ 00D6  8B D3				mov dx, bx
+ 00D8				print_type:
+ 00D8  E8 005A R			call PRINT
+					; Восстанавливаем зна
+				чения регистров
+ 00DB  07				pop es
+ 00DC  5A				pop dx
+ 00DD  5B				pop bx
+ 00DE  58				pop ax
+ 00DF  C3				ret
+ 00E0				PRINT_PC_TYPE ENDP
+				
+				; Выводит на экран версию �
+				�С, серийные номера OEM и по�
+				�ьзователя
+ 00E0				PRINT_PC_INFO PROC NEAR
+					; Сохраняем значения �
+				�егистров
+ 00E0  50				push ax
+ 00E1  53				push bx
+ 00E2  51				push cx
+ 00E3  52				push dx
+ 00E4  56				push si
+ 00E5  57				push di
+					; Получаем версию ОС и
+				 серийные номера OEM и поль�
+				�ователя при помощи функц�
+				�и 30h прерывания 21h
+ 00E6  B4 30				mov ah, 30h
+ 00E8  CD 21				int 21h
+					; Переводим значения �
+				�айтов AH и AL в 10-ичную СС в �
+				�иде символов и сохраняем 
+				их в строке OS_VERSION
+ 00EA  BE 007A R			mov si, offset OS_VERSION + 1
+ 00ED  8A D4				mov dl, ah
+ 00EF  E8 0037 R			call BYTE_TO_DEC
+ 00F2  8A C2				mov al, dl
+ 00F4  83 C6 03				add si, 3
+ 00F7  E8 0037 R			call BYTE_TO_DEC
+					; Выводим на экран вер
+				сию ОС
+ 00FA  BA 006C R			mov dx, offset OS_VERSION_MESSAGE
+ 00FD  E8 005A R			call PRINT
+ 0100  BA 0079 R			mov dx, offset OS_VERSION
+ 0103  E8 005A R			call PRINT
+					; Переводим значение �
+				�айта BH в 16-ичную СС в виде 
+				символов и сохраняем их в 
+				строке OEM_NUMBER
+ 0106  8A C7				mov al, bh
+ 0108  E8 000E R			call BYTE_TO_HEX
+ 010B  BF 0095 R			mov di, offset OEM_NUMBER
+ 010E  88 05				mov [di], al
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Page     1-6
+
+
+ 0110  88 65 01				mov [di+1], ah
+					; Выводим на экран сер
+				ийный номер OEM
+ 0113  BA 0081 R			mov dx, offset OEM_NUMBER_MESSAGE
+ 0116  E8 005A R			call PRINT
+ 0119  BA 0095 R			mov dx, offset OEM_NUMBER
+ 011C  E8 005A R			call PRINT
+					; Переводим значения �
+				�айтов BL:CX в 16-ичную СС в ви
+				де символов и сохраняем и�
+				� в строке USER_NUMBER
+ 011F  8A C3				mov al, bl
+ 0121  E8 000E R			call BYTE_TO_HEX
+ 0124  BF 00AF R			mov di, offset USER_NUMBER
+ 0127  88 05				mov [di], al
+ 0129  88 65 01				mov [di+1], ah
+ 012C  8B C1				mov ax, cx
+ 012E  83 C7 05				add di, 5
+ 0131  E8 001F R			call WORD_TO_HEX
+					; Выводим на экран сер
+				ийный номер пользователя
+ 0134  BA 009A R			mov dx, offset USER_NUMBER_MESSAGE
+ 0137  E8 005A R			call PRINT
+ 013A  BA 00AF R			mov dx, offset USER_NUMBER
+ 013D  E8 005A R			call PRINT
+					; Восстанавливаем зна
+				чения регистров
+ 0140  5F				pop di
+ 0141  5E				pop si
+ 0142  5A				pop dx
+ 0143  59				pop cx
+ 0144  5B				pop bx
+ 0145  58				pop ax
+ 0146  C3				ret
+ 0147				PRINT_PC_INFO ENDP
+				
+ 0147				BEGIN:
+ 0147  B8 ---- R			mov ax, @data
+ 014A  8E D8				mov ds, ax
+ 014C  E8 0061 R			call PRINT_PC_TYPE
+ 014F  E8 00E0 R			call PRINT_PC_INFO
+ 0152  32 C0				xor al, al
+ 0154  B4 4C				mov AH, 4Ch
+ 0156  CD 21				int 21H
+				
+				END START
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	00B8	WORD	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	0100	PARA	STACK	'STACK'
+_TEXT  . . . . . . . . . . . . .  	0158	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	0147	_TEXT
+BYTE_TO_DEC  . . . . . . . . . .  	N PROC	0037	_TEXT	Length = 0023
+BYTE_TO_HEX  . . . . . . . . . .  	N PROC	000E	_TEXT	Length = 0011
+
+END_L  . . . . . . . . . . . . .  	L NEAR	0057	_TEXT
+
+LOOP_BD  . . . . . . . . . . . .  	L NEAR	0040	_TEXT
+
+NEXT . . . . . . . . . . . . . .  	L NEAR	000B	_TEXT
+
+OEM_NUMBER . . . . . . . . . . .  	L BYTE	0095	_DATA
+OEM_NUMBER_MESSAGE . . . . . . .  	L BYTE	0081	_DATA
+OS_VERSION . . . . . . . . . . .  	L BYTE	0079	_DATA
+OS_VERSION_MESSAGE . . . . . . .  	L BYTE	006C	_DATA
+
+PC_TYPE_1  . . . . . . . . . . .  	L BYTE	000A	_DATA
+PC_TYPE_2  . . . . . . . . . . .  	L BYTE	000F	_DATA
+PC_TYPE_3  . . . . . . . . . . .  	L BYTE	0017	_DATA
+PC_TYPE_4  . . . . . . . . . . .  	L BYTE	001C	_DATA
+PC_TYPE_5  . . . . . . . . . . .  	L BYTE	002B	_DATA
+PC_TYPE_6  . . . . . . . . . . .  	L BYTE	0040	_DATA
+PC_TYPE_7  . . . . . . . . . . .  	L BYTE	004F	_DATA
+PC_TYPE_8  . . . . . . . . . . .  	L BYTE	0056	_DATA
+PC_TYPE_MESSAGE  . . . . . . . .  	L BYTE	0000	_DATA
+PC_TYPE_UNKNOWN  . . . . . . . .  	L BYTE	0067	_DATA
+PRINT  . . . . . . . . . . . . .  	N PROC	005A	_TEXT	Length = 0007
+PRINT_PC_INFO  . . . . . . . . .  	N PROC	00E0	_TEXT	Length = 0067
+PRINT_PC_TYPE  . . . . . . . . .  	N PROC	0061	_TEXT	Length = 007F
+PRINT_TYPE . . . . . . . . . . .  	L NEAR	00D8	_TEXT
+
+START  . . . . . . . . . . . . .  	L NEAR	0000	_TEXT
+
+TETR_TO_HEX  . . . . . . . . . .  	N PROC	0003	_TEXT	Length = 000B
+TYPE_1 . . . . . . . . . . . . .  	L NEAR	009B	_TEXT
+TYPE_2 . . . . . . . . . . . . .  	L NEAR	00A1	_TEXT
+TYPE_3 . . . . . . . . . . . . .  	L NEAR	00A7	_TEXT
+TYPE_4 . . . . . . . . . . . . .  	L NEAR	00AD	_TEXT
+TYPE_5 . . . . . . . . . . . . .  	L NEAR	00B3	_TEXT
+TYPE_6 . . . . . . . . . . . . .  	L NEAR	00B9	_TEXT
+TYPE_7 . . . . . . . . . . . . .  	L NEAR	00BF	_TEXT
+Microsoft (R) Macro Assembler Version 5.10                  2/10/21 03:08:17
+                                                             Symbols-2
+
+
+TYPE_8 . . . . . . . . . . . . .  	L NEAR	00C5	_TEXT
+TYPE_UNKNOWN . . . . . . . . . .  	L NEAR	00CB	_TEXT
+
+USER_NUMBER  . . . . . . . . . .  	L BYTE	00AF	_DATA
+USER_NUMBER_MESSAGE  . . . . . .  	L BYTE	009A	_DATA
+
+WORD_TO_HEX  . . . . . . . . . .  	N PROC	001F	_TEXT	Length = 0018
+
+@CODE  . . . . . . . . . . . . .  	TEXT  _TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  0		
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@DATASIZE  . . . . . . . . . . .  	TEXT  0		
+@FILENAME  . . . . . . . . . . .  	TEXT  lab1_exe		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    248 Source  Lines
+    248 Total   Lines
+     55 Symbols
+
+  47826 + 449192 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

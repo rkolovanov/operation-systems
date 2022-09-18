@@ -1,0 +1,322 @@
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Page     1-1
+
+
+ 0000				PROGRAM SEGMENT
+					ASSUME CS:PROGRAM, DS:PROGRAM, ES:NOTHI
+				NG, SS:NOTHING
+ 0100					ORG 100h
+				
+				; Точка входа
+ 0100				START:
+ 0100  E9 03A4 R			jmp BEGIN
+				
+				; Данные
+ 0103  53 65 67 6D 65 6E	INVALID_MEMORY_ADDRESS_MESSAGE DB 'Segment addr
+				ess of invalid memory: $'
+       74 20 61 64 64 72	
+       65 73 73 20 6F 66	
+       20 69 6E 76 61 6C	
+       69 64 20 6D 65 6D	
+       6F 72 79 3A 20 24	
+ 0127  20 20 20 20 0D 0A	INVALID_MEMORY_ADDRESS DB '    ', 0Dh, 0Ah, '$'
+       24			
+ 012E  53 65 67 6D 65 6E	ENVIRONMENT_ADDRESS_MESSAGE DB 'Segment address
+				 of the environment: $'
+       74 20 61 64 64 72	
+       65 73 73 20 6F 66	
+       20 74 68 65 20 65	
+       6E 76 69 72 6F 6E	
+       6D 65 6E 74 3A 20	
+       24			
+ 0153  20 20 20 20 0D 0A	ENVIRONMENT_ADDRESS DB '    ', 0Dh, 0Ah, '$'
+       24			
+ 015A  54 68 65 20 74 61	COMMAND_PROMPT_TAIL_MESSAGE DB 'The tail comman
+				d prompt:$'
+       69 6C 20 63 6F 6D	
+       6D 61 6E 64 20 70	
+       72 6F 6D 70 74 3A	
+       24			
+ 0173  43 6F 6E 74 65 6E	ENVIRONMENT_AREA_CONTENT_MESSAGE DB 'Content of
+				 the environment area:', 0Dh, 0Ah, '$'
+       74 20 6F 66 20 74	
+       68 65 20 65 6E 76	
+       69 72 6F 6E 6D 65	
+       6E 74 20 61 72 65	
+       61 3A 0D 0A 24		
+ 0196  50 61 74 68 20 6F	MODULE_PATH_MESSAGE DB 'Path of loaded module: 
+				$'
+       66 20 6C 6F 61 64	
+       65 64 20 6D 6F 64	
+       75 6C 65 3A 20 24	
+ 01AE  0100[			INFORMATION_STRING DB 256 DUP('$')
+	   24			
+			 ]	
+				
+				
+				; Перевод тетрады (4-ех мла�
+				�ших байтов AL) в 16-ичную СС 
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Page     1-2
+
+
+				и ее представление в виде 
+				символа
+ 02AE				TETR_TO_HEX PROC NEAR
+ 02AE  24 0F				and al, 0Fh
+ 02B0  3C 09				cmp al, 09
+ 02B2  76 02				jbe next
+ 02B4  04 07				add al, 07
+ 02B6				next:
+ 02B6  04 30				add al, 30h
+ 02B8  C3				ret
+ 02B9				TETR_TO_HEX ENDP
+				
+				; Перевод байта AL в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 02B9				BYTE_TO_HEX PROC NEAR
+ 02B9  51				push cx
+ 02BA  8A E0				mov ah, al
+ 02BC  E8 02AE R			call TETR_TO_HEX
+ 02BF  86 C4				xchg al, ah
+ 02C1  B1 04				mov cl, 4
+ 02C3  D2 E8				shr al, cl
+ 02C5  E8 02AE R			call TETR_TO_HEX
+ 02C8  59				pop cx
+ 02C9  C3				ret
+ 02CA				BYTE_TO_HEX ENDP
+				
+				; Перевод слова AX в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 02CA				WORD_TO_HEX PROC NEAR
+ 02CA  53				push bx
+ 02CB  8A FC				mov bh, ah
+ 02CD  E8 02B9 R			call BYTE_TO_HEX
+ 02D0  88 25				mov [di], ah
+ 02D2  4F				dec di
+ 02D3  88 05				mov [di], al
+ 02D5  4F				dec di
+ 02D6  8A C7				mov AL, bh
+ 02D8  E8 02B9 R			call BYTE_TO_HEX
+ 02DB  88 25				mov [di], ah
+ 02DD  4F				dec di
+ 02DE  88 05				mov [di], al
+ 02E0  5B				pop bx
+ 02E1  C3				ret
+ 02E2				WORD_TO_HEX ENDP
+				
+				; Вызывает функцию вывода 
+				строки на экран
+ 02E2				PRINT PROC NEAR
+ 02E2  50				push ax
+ 02E3  B4 09				mov ah, 09h
+ 02E5  CD 21				int 21h
+ 02E7  58				pop ax
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Page     1-3
+
+
+ 02E8  C3				ret
+ 02E9				PRINT ENDP
+				
+				; Вывод на экран сегментно
+				го адреса первого байта н�
+				�доступной памяти
+ 02E9				PRINT_INVALID_MEMORY_ADDRESS PROC NEAR
+ 02E9  A1 0002				mov ax, DS:[0002h]
+ 02EC  BF 012A R			mov di, offset INVALID_MEMORY_ADDRESS +
+				 3
+ 02EF  E8 02CA R			call WORD_TO_HEX
+ 02F2  BA 0103 R			mov dx, offset INVALID_MEMORY_ADDRESS_M
+				ESSAGE
+ 02F5  E8 02E2 R			call PRINT
+ 02F8  BA 0127 R			mov dx, offset INVALID_MEMORY_ADDRESS
+ 02FB  E8 02E2 R			call PRINT
+ 02FE  C3				ret
+ 02FF				PRINT_INVALID_MEMORY_ADDRESS ENDP
+				
+				; Вывод на экран сегментно
+				го адреса среды, передава�
+				�мой программе
+ 02FF				PRINT_ENVIRONMENT_ADDRESS PROC NEAR
+ 02FF  A1 002C				mov ax, DS:[002Ch]
+ 0302  BF 0156 R			mov di, offset ENVIRONMENT_ADDRESS + 3
+ 0305  E8 02CA R			call WORD_TO_HEX
+ 0308  BA 012E R			mov dx, offset ENVIRONMENT_ADDRESS_MESS
+				AGE
+ 030B  E8 02E2 R			call PRINT
+ 030E  BA 0153 R			mov dx, offset ENVIRONMENT_ADDRESS
+ 0311  E8 02E2 R			call PRINT
+ 0314  C3				ret
+ 0315				PRINT_ENVIRONMENT_ADDRESS ENDP
+				
+				; Вывод на экран хвоста ко�
+				�андной строки
+ 0315				PRINT_COMMAND_PROMPT_TAIL PROC NEAR
+ 0315  BE 0081				mov si, 0081h
+ 0318  BF 01AE R			mov di, offset INFORMATION_STRING
+ 031B  8A 0E 0080			mov cl, DS:[0080h]
+ 031F  32 ED				xor ch, ch
+ 0321  F3/ A4				rep movsb
+ 0323  C6 05 0D				mov byte ptr [di], 0Dh
+ 0326  C6 45 01 0A			mov byte ptr [di+1], 0Ah
+ 032A  C6 45 02 24			mov byte ptr [di+2], '$'
+ 032E  BA 015A R			mov dx, offset COMMAND_PROMPT_TAIL_MESS
+				AGE
+ 0331  E8 02E2 R			call PRINT
+ 0334  BA 01AE R			mov dx, offset INFORMATION_STRING
+ 0337  E8 02E2 R			call PRINT
+ 033A  C3				ret
+ 033B				PRINT_COMMAND_PROMPT_TAIL ENDP
+				
+				; Вывод на экран содержимо
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Page     1-4
+
+
+				го области среды и путя за
+				гружаемого модуля
+ 033B				PRINT_ENVIRONMENT_AREA_CONTENT_AND_MODULE_PATH 
+				PROC NEAR
+ 033B  A1 002C				mov ax, DS:[002Ch]
+ 033E  8E D8				mov ds, ax
+ 0340  33 F6				xor si, si
+ 0342  BF 01AE R			mov di, offset INFORMATION_STRING
+ 0345				loop1_start:
+ 0345  B0 09				mov al, 09h
+ 0347  AA				stosb
+ 0348  AC				lodsb
+ 0349  3C 00				cmp al, 0h
+ 034B  74 0E				je loop1_end
+ 034D  AA				stosb
+ 034E				loop2_start:
+ 034E  AC				lodsb
+ 034F  3C 00				cmp al, 0h
+ 0351  74 03				je loop2_end
+ 0353  AA				stosb
+ 0354  EB F8				jmp loop2_start
+ 0356				loop2_end:
+ 0356  B0 0A				mov al, 0Ah
+ 0358  AA				stosb
+ 0359  EB EA				jmp loop1_start
+ 035B				loop1_end:
+ 035B  26: C6 05 0D			mov byte ptr ES:[di], 0Dh
+ 035F  26: C6 45 01 24			mov byte ptr ES:[di+1], '$'
+ 0364  8C DB				mov bx, ds
+ 0366  8C C0				mov ax, es
+ 0368  8E D8				mov ds, ax
+ 036A  BA 0173 R			mov dx, offset ENVIRONMENT_AREA_CONTENT
+				_MESSAGE
+ 036D  E8 02E2 R			call PRINT
+ 0370  BA 01AE R			mov dx, offset INFORMATION_STRING
+ 0373  E8 02E2 R			call PRINT
+ 0376  BF 01AE R			mov di, offset INFORMATION_STRING
+ 0379  8E DB				mov ds, bx
+ 037B  AC				lodsb
+ 037C  AC				lodsb
+ 037D				loop3_start:
+ 037D  AC				lodsb
+ 037E  3C 00				cmp al, 0h
+ 0380  74 03				je loop3_end
+ 0382  AA				stosb
+ 0383  EB F8				jmp loop3_start
+ 0385				loop3_end:
+ 0385  26: C6 05 0A			mov byte ptr ES:[di], 0Ah
+ 0389  26: C6 45 01 0D			mov byte ptr ES:[di+1], 0Dh
+ 038E  26: C6 45 02 24			mov byte ptr ES:[di+2], '$'
+ 0393  8C C0				mov ax, es
+ 0395  8E D8				mov ds, ax
+ 0397  BA 0196 R			mov dx, offset MODULE_PATH_MESSAGE
+ 039A  E8 02E2 R			call PRINT
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Page     1-5
+
+
+ 039D  BA 01AE R			mov dx, offset INFORMATION_STRING
+ 03A0  E8 02E2 R			call PRINT
+ 03A3  C3				ret
+ 03A4				PRINT_ENVIRONMENT_AREA_CONTENT_AND_MODULE_PATH 
+				ENDP
+				
+ 03A4				BEGIN:
+ 03A4  E8 02E9 R			call PRINT_INVALID_MEMORY_ADDRESS
+ 03A7  E8 02FF R			call PRINT_ENVIRONMENT_ADDRESS
+ 03AA  E8 0315 R			call PRINT_COMMAND_PROMPT_TAIL
+ 03AD  E8 033B R			call PRINT_ENVIRONMENT_AREA_CONTENT_AND
+				_MODULE_PATH
+ 03B0  32 C0				xor al, al
+ 03B2  B4 4C				mov AH, 4Ch
+ 03B4  CD 21				int 21H
+					
+ 03B6				PROGRAM ENDS
+				
+				END START
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+PROGRAM  . . . . . . . . . . . .  	03B6	PARA	NONE	
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	03A4	PROGRAM
+BYTE_TO_HEX  . . . . . . . . . .  	N PROC	02B9	PROGRAM	Length = 0011
+
+COMMAND_PROMPT_TAIL_MESSAGE  . .  	L BYTE	015A	PROGRAM
+
+ENVIRONMENT_ADDRESS  . . . . . .  	L BYTE	0153	PROGRAM
+ENVIRONMENT_ADDRESS_MESSAGE  . .  	L BYTE	012E	PROGRAM
+ENVIRONMENT_AREA_CONTENT_MESSAG   	L BYTE	0173	PROGRAM
+
+INFORMATION_STRING . . . . . . .  	L BYTE	01AE	PROGRAM	Length = 0100
+INVALID_MEMORY_ADDRESS . . . . .  	L BYTE	0127	PROGRAM
+INVALID_MEMORY_ADDRESS_MESSAGE .  	L BYTE	0103	PROGRAM
+
+LOOP1_END  . . . . . . . . . . .  	L NEAR	035B	PROGRAM
+LOOP1_START  . . . . . . . . . .  	L NEAR	0345	PROGRAM
+LOOP2_END  . . . . . . . . . . .  	L NEAR	0356	PROGRAM
+LOOP2_START  . . . . . . . . . .  	L NEAR	034E	PROGRAM
+LOOP3_END  . . . . . . . . . . .  	L NEAR	0385	PROGRAM
+LOOP3_START  . . . . . . . . . .  	L NEAR	037D	PROGRAM
+
+MODULE_PATH_MESSAGE  . . . . . .  	L BYTE	0196	PROGRAM
+
+NEXT . . . . . . . . . . . . . .  	L NEAR	02B6	PROGRAM
+
+PRINT  . . . . . . . . . . . . .  	N PROC	02E2	PROGRAM	Length = 0007
+PRINT_COMMAND_PROMPT_TAIL  . . .  	N PROC	0315	PROGRAM	Length = 0026
+PRINT_ENVIRONMENT_ADDRESS  . . .  	N PROC	02FF	PROGRAM	Length = 0016
+PRINT_ENVIRONMENT_AREA_CONTENT_   	N PROC	033B	PROGRAM	Length = 0069
+PRINT_INVALID_MEMORY_ADDRESS . .  	N PROC	02E9	PROGRAM	Length = 0016
+
+START  . . . . . . . . . . . . .  	L NEAR	0100	PROGRAM
+
+TETR_TO_HEX  . . . . . . . . . .  	N PROC	02AE	PROGRAM	Length = 000B
+
+WORD_TO_HEX  . . . . . . . . . .  	N PROC	02CA	PROGRAM	Length = 0018
+
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@FILENAME  . . . . . . . . . . .  	TEXT  lab2		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+Microsoft (R) Macro Assembler Version 5.10                  2/18/21 15:37:14
+                                                             Symbols-2
+
+
+
+    178 Source  Lines
+    178 Total   Lines
+     31 Symbols
+
+  47786 + 453329 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

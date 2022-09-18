@@ -1,0 +1,149 @@
+Microsoft (R) Macro Assembler Version 5.10                  5/11/21 20:35:30
+                                                             Page     1-1
+
+
+ 0000				PROGRAM SEGMENT
+					ASSUME CS:PROGRAM, DS:NOTHING, ES:NOTHI
+				NG, SS:NOTHING
+					
+ 0000				START:
+ 0000  EB 67 90				jmp BEGIN
+				
+ 0003  4F 76 65 72 6C 61	SEGMENT_ADDRESS_MESSAGE DB "Overlay module 2. S
+				egment address: $"
+       79 20 6D 6F 64 75	
+       6C 65 20 32 2E 20	
+       53 65 67 6D 65 6E	
+       74 20 61 64 64 72	
+       65 73 73 3A 20 24	
+ 0027  20 20 20 20 0D 0A	SEGMENT_ADDRESS DB "    ", 0Dh, 0Ah, "$"
+       24			
+					
+				; Перевод тетрады (4-ех мла�
+				�ших байтов AL) в 16-ичную СС 
+				и ее представление в виде 
+				символа
+ 002E				TETR_TO_HEX PROC NEAR
+ 002E  24 0F				and al, 0Fh
+ 0030  3C 09				cmp al, 09
+ 0032  76 02				jbe next
+ 0034  04 07				add al, 07
+ 0036				next:
+ 0036  04 30				add al, 30h
+ 0038  C3				ret
+ 0039				TETR_TO_HEX ENDP
+				
+				; Перевод байта AL в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 0039				BYTE_TO_HEX PROC NEAR
+ 0039  51				push cx
+ 003A  8A E0				mov ah, al
+ 003C  E8 002E R			call TETR_TO_HEX
+ 003F  86 C4				xchg al, ah
+ 0041  B1 04				mov cl, 4
+ 0043  D2 E8				shr al, cl
+ 0045  E8 002E R			call TETR_TO_HEX
+ 0048  59				pop cx
+ 0049  C3				ret
+ 004A				BYTE_TO_HEX ENDP
+				
+				; Перевод слова AX в 16-ичную
+				 СС и его представление в �
+				�иде символов
+ 004A				WORD_TO_HEX PROC NEAR
+ 004A  53				push bx
+ 004B  8A FC				mov bh, ah
+ 004D  E8 0039 R			call BYTE_TO_HEX
+ 0050  88 25				mov [di], ah
+Microsoft (R) Macro Assembler Version 5.10                  5/11/21 20:35:30
+                                                             Page     1-2
+
+
+ 0052  4F				dec di
+ 0053  88 05				mov [di], al
+ 0055  4F				dec di
+ 0056  8A C7				mov AL, bh
+ 0058  E8 0039 R			call BYTE_TO_HEX
+ 005B  88 25				mov [di], ah
+ 005D  4F				dec di
+ 005E  88 05				mov [di], al
+ 0060  5B				pop bx
+ 0061  C3				ret
+ 0062				WORD_TO_HEX ENDP
+				
+				; Вызывает функцию вывода 
+				строки на экран
+ 0062				PRINT PROC NEAR
+ 0062  50				push ax
+ 0063  B4 09				mov ah, 09h
+ 0065  CD 21				int 21h
+ 0067  58				pop ax
+ 0068  C3				ret
+ 0069				PRINT ENDP
+					
+ 0069				BEGIN:
+ 0069  50				push ax
+ 006A  52				push dx
+ 006B  1E				push ds
+ 006C  57				push di
+					
+ 006D  8C C8				mov ax, cs
+ 006F  8E D8				mov ds, ax
+ 0071  BF 002A R			mov di, offset SEGMENT_ADDRESS + 3
+ 0074  E8 004A R			call WORD_TO_HEX
+ 0077  BA 0003 R			mov dx, offset SEGMENT_ADDRESS_MESSAGE
+ 007A  E8 0062 R			call PRINT
+ 007D  BA 0027 R			mov dx, offset SEGMENT_ADDRESS
+ 0080  E8 0062 R			call PRINT
+					
+ 0083  5F				pop di
+ 0084  1F				pop ds
+ 0085  5A				pop dx
+ 0086  58				pop ax
+					
+ 0087  CB				retf
+ 0088				PROGRAM ENDS
+				END START
+Microsoft (R) Macro Assembler Version 5.10                  5/11/21 20:35:30
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+PROGRAM  . . . . . . . . . . . .  	0088	PARA	NONE	
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	0069	PROGRAM
+BYTE_TO_HEX  . . . . . . . . . .  	N PROC	0039	PROGRAM	Length = 0011
+
+NEXT . . . . . . . . . . . . . .  	L NEAR	0036	PROGRAM
+
+PRINT  . . . . . . . . . . . . .  	N PROC	0062	PROGRAM	Length = 0007
+
+SEGMENT_ADDRESS  . . . . . . . .  	L BYTE	0027	PROGRAM
+SEGMENT_ADDRESS_MESSAGE  . . . .  	L BYTE	0003	PROGRAM
+START  . . . . . . . . . . . . .  	L NEAR	0000	PROGRAM
+
+TETR_TO_HEX  . . . . . . . . . .  	N PROC	002E	PROGRAM	Length = 000B
+
+WORD_TO_HEX  . . . . . . . . . .  	N PROC	004A	PROGRAM	Length = 0018
+
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@FILENAME  . . . . . . . . . . .  	TEXT  OVERLAY2		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+     83 Source  Lines
+     83 Total   Lines
+     15 Symbols
+
+  47946 + 461361 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

@@ -1,0 +1,584 @@
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-1
+
+
+				.model small
+				.stack 100h
+				
+				.data
+ 0000  0000				KEEP_PSP DW 0h
+ 0002  0000				KEEP_SS DW 0h
+ 0004  0000				KEEP_SP DW 0h
+ 0006  0000				PARAMETERS_BLOCK 	DW 0h 
+ 0008  00000000								
+					DD 0h 
+ 000C  00000000								
+					DD 0h 
+ 0010  00000000								
+					DD 0h
+ 0014  01 0D				COMMAND_STRING DB 1h, 0Dh
+ 0016  0080[				PATH DB 128 DUP(0)
+	   00			
+			 ]	
+				
+ 0096  43 61 6C 6C 65 64		CALLED_MODULE_FINISH_MESSAGE DB "Called
+				 program ended with code "
+       20 70 72 6F 67 72	
+       61 6D 20 65 6E 64	
+       65 64 20 77 69 74	
+       68 20 63 6F 64 65	
+       20			
+ 00B5  20 20 2E 0D 0A 24		CALLED_MODULE_FINISH_CODE DB "  .", 0Dh
+				, 0Ah, "$"
+ 00BB  0D 0A 52 65 61 73		CALLED_MODULE_FINISH_REASON_MESSAGE DB 
+				0Dh, 0Ah, "Reason for called program terminatio
+				n: $"
+       6F 6E 20 66 6F 72	
+       20 63 61 6C 6C 65	
+       64 20 70 72 6F 67	
+       72 61 6D 20 74 65	
+       72 6D 69 6E 61 74	
+       69 6F 6E 3A 20 24	
+ 00E5  4E 6F 72 6D 61 6C		CALLED_MODULE_FINISH_REASON_0 DB "Norma
+				l termination.", 0Dh, 0Ah, "$"
+       20 74 65 72 6D 69	
+       6E 61 74 69 6F 6E	
+       2E 0D 0A 24		
+ 00FB  54 65 72 6D 69 6E		CALLED_MODULE_FINISH_REASON_1 DB "Termi
+				nation by Ctrl-Break.", 0Dh, 0Ah, "$"
+       61 74 69 6F 6E 20	
+       62 79 20 43 74 72	
+       6C 2D 42 72 65 61	
+       6B 2E 0D 0A 24		
+ 0118  54 65 72 6D 69 6E		CALLED_MODULE_FINISH_REASON_2 DB "Termi
+				nation by device error.", 0Dh, 0Ah, "$"
+       61 74 69 6F 6E 20	
+       62 79 20 64 65 76	
+       69 63 65 20 65 72	
+       72 6F 72 2E 0D 0A	
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-2
+
+
+       24			
+ 0137  54 65 72 6D 69 6E		CALLED_MODULE_FINISH_REASON_3 DB "Termi
+				nation by function 31h.", 0Dh, 0Ah, "$"
+       61 74 69 6F 6E 20	
+       62 79 20 66 75 6E	
+       63 74 69 6F 6E 20	
+       33 31 68 2E 0D 0A	
+       24			
+ 0156  55 6E 6B 6E 6F 77		CALLED_MODULE_FINISH_REASON_UNKNOWN DB 
+				"Unknown reason.", 0Dh, 0Ah, "$"
+       6E 20 72 65 61 73	
+       6F 6E 2E 0D 0A 24	
+ 0168  45 72 72 6F 72 21		ERROR_1_MESSAGE DB "Error! Code: 1. Inv
+				alid function number.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 31 2E 20 49 6E	
+       76 61 6C 69 64 20	
+       66 75 6E 63 74 69	
+       6F 6E 20 6E 75 6D	
+       62 65 72 2E 0D 0A	
+       24			
+ 0193  45 72 72 6F 72 21		ERROR_2_MESSAGE DB "Error! Code: 2. Fil
+				e not found.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 32 2E 20 46 69	
+       6C 65 20 6E 6F 74	
+       20 66 6F 75 6E 64	
+       2E 0D 0A 24		
+ 01B5  45 72 72 6F 72 21		ERROR_5_MESSAGE DB "Error! Code: 5. Dis
+				k error.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 35 2E 20 44 69	
+       73 6B 20 65 72 72	
+       6F 72 2E 0D 0A 24	
+ 01D3  45 72 72 6F 72 21		ERROR_7_MESSAGE DB "Error! Code: 7. Mem
+				ory control block is destroyed.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 37 2E 20 4D 65	
+       6D 6F 72 79 20 63	
+       6F 6E 74 72 6F 6C	
+       20 62 6C 6F 63 6B	
+       20 69 73 20 64 65	
+       73 74 72 6F 79 65	
+       64 2E 0D 0A 24		
+ 0208  45 72 72 6F 72 21		ERROR_8_MESSAGE DB "Error! Code: 8. Not
+				 enough memory to execute the function.", 0Dh, 
+				0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 38 2E 20 4E 6F	
+       74 20 65 6E 6F 75	
+       67 68 20 6D 65 6D	
+       6F 72 79 20 74 6F	
+       20 65 78 65 63 75	
+       74 65 20 74 68 65	
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-3
+
+
+       20 66 75 6E 63 74	
+       69 6F 6E 2E 0D 0A	
+       24			
+ 0245  45 72 72 6F 72 21		ERROR_9_MESSAGE DB "Error! Code: 9. Inv
+				alid memory block address.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 39 2E 20 49 6E	
+       76 61 6C 69 64 20	
+       6D 65 6D 6F 72 79	
+       20 62 6C 6F 63 6B	
+       20 61 64 64 72 65	
+       73 73 2E 0D 0A 24	
+ 0275  45 72 72 6F 72 21		ERROR_10_MESSAGE DB "Error! Code: 10. I
+				ncorrect environment string.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 31 30 2E 20 49	
+       6E 63 6F 72 72 65	
+       63 74 20 65 6E 76	
+       69 72 6F 6E 6D 65	
+       6E 74 20 73 74 72	
+       69 6E 67 2E 0D 0A	
+       24			
+ 02A6  45 72 72 6F 72 21		ERROR_11_MESSAGE DB "Error! Code: 11. I
+				nvalid format.", 0Dh, 0Ah, "$"
+       20 43 6F 64 65 3A	
+       20 31 31 2E 20 49	
+       6E 76 61 6C 69 64	
+       20 66 6F 72 6D 61	
+       74 2E 0D 0A 24		
+ 02C9  55 6E 6B 6E 6F 77		UNKNOWN_ERROR_MESSAGE DB "Unknown error
+				!", 0Dh, 0Ah, "$"
+       6E 20 65 72 72 6F	
+       72 21 0D 0A 24		
+					
+				.code
+				; Перевод байта AL в 10-ичную
+				 СС и его представление в �
+				�иде символов
+ 0000				BYTE_TO_DEC PROC NEAR
+ 0000  51				push cx
+ 0001  52				push dx
+					
+ 0002  32 E4				xor ah, ah
+ 0004  33 D2				xor dx, dx
+ 0006  B9 000A				mov cx, 10
+					
+ 0009				loop_bd:
+ 0009  F7 F1				div cx
+ 000B  80 CA 30				or dl,30h
+ 000E  88 14				mov [si], dl
+ 0010  4E				dec si
+ 0011  33 D2				xor dx, dx
+ 0013  3D 000A				cmp ax, 10
+ 0016  73 F1				jae loop_bd
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-4
+
+
+ 0018  3C 00				cmp al, 00h
+ 001A  74 04				je end_l
+ 001C  0C 30				or al, 30h
+ 001E  88 04				mov [si], al
+					
+ 0020				end_l:
+ 0020  5A				pop dx
+ 0021  59				pop cx
+ 0022  C3				ret
+ 0023				BYTE_TO_DEC ENDP
+				
+				; Загрузка и вызов дочерне
+				го модуля
+ 0023				LOAD_MODULE PROC NEAR
+ 0023  50				push ax
+ 0024  53				push bx
+ 0025  52				push dx
+ 0026  56				push si
+ 0027  1E				push ds
+ 0028  06				push es
+					
+ 0029  89 26 0004 R			mov KEEP_SP, sp
+ 002D  8C 16 0002 R			mov KEEP_SS, ss
+					
+ 0031  B8 ---- R			mov ax, @data
+ 0034  8E C0				mov es, ax
+ 0036  BB 0006 R			mov bx, offset PARAMETERS_BLOCK
+ 0039  BA 0016 R			mov dx, offset PATH
+ 003C  C7 47 02 0014 R			mov word ptr [bx + 2], offset COMMAND_S
+				TRING
+ 0041  8C 5F 04				mov word ptr [bx + 4], ds
+					
+ 0044  B8 4B00				mov ax, 4B00h 
+ 0047  CD 21				int 21h
+					
+ 0049  8B 26 0004 R			mov sp, KEEP_SP
+ 004D  8E 16 0002 R			mov ss, KEEP_SS
+ 0051  07				pop es
+ 0052  1F				pop ds
+					
+ 0053  E8 012B R			call CHECK_AND_PRINT_ERROR
+					
+ 0056  B4 4D				mov ah, 4Dh
+ 0058  CD 21				int 21h 
+					
+ 005A  BA 00BB R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_MESSAGE
+ 005D  E8 01A6 R			call PRINT
+					
+ 0060  80 FC 00				cmp ah, 0
+ 0063  74 12				je reason_0
+ 0065  80 FC 01				cmp ah, 1
+ 0068  74 1F				je reason_1
+ 006A  80 FC 02				cmp ah, 2
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-5
+
+
+ 006D  74 20				je reason_2
+ 006F  80 FC 03				cmp ah, 3
+ 0072  74 21				je reason_3
+ 0074  EB 25 90				jmp reason_unknown
+					
+ 0077				reason_0:
+ 0077  BA 00E5 R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_0
+ 007A  E8 01A6 R			call PRINT
+					
+ 007D  BE 00B6 R			mov si, offset CALLED_MODULE_FINISH_COD
+				E + 1
+ 0080  E8 0000 R			call BYTE_TO_DEC
+ 0083  BA 0096 R			mov dx, offset CALLED_MODULE_FINISH_MES
+				SAGE
+				
+ 0086  EB 16 90				jmp reason_print
+ 0089				reason_1:
+ 0089  BA 00FB R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_1
+ 008C  EB 10 90				jmp reason_print
+ 008F				reason_2:
+ 008F  BA 0118 R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_2
+ 0092  EB 0A 90				jmp reason_print
+ 0095				reason_3:
+ 0095  BA 0137 R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_3
+ 0098  EB 04 90				jmp reason_print
+ 009B				reason_unknown:
+ 009B  BA 0156 R			mov dx, offset CALLED_MODULE_FINISH_REA
+				SON_UNKNOWN
+				
+ 009E				reason_print:
+ 009E  E8 01A6 R			call PRINT
+				
+ 00A1  5E				pop si
+ 00A2  5A				pop dx
+ 00A3  5B				pop bx
+ 00A4  58				pop ax
+					
+ 00A5  C3				ret
+ 00A6				LOAD_MODULE ENDP
+				
+				; Формирование строки с пу
+				тем до вызываемого модуля
+ 00A6				SET_PATH_STRING PROC NEAR
+ 00A6  50				push ax
+ 00A7  53				push bx
+ 00A8  56				push si
+ 00A9  57				push di
+ 00AA  1E				push ds
+ 00AB  06				push es
+					
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-6
+
+
+ 00AC  8C D8				mov ax, ds
+ 00AE  8E C0				mov es, ax
+ 00B0  A1 0000 R			mov ax, KEEP_PSP
+ 00B3  8E D8				mov ds, ax
+ 00B5  A1 002C				mov ax, DS:[002Ch]
+ 00B8  8E D8				mov ds, ax
+ 00BA  BF 0016 R			mov di, offset PATH
+					
+ 00BD  33 F6				xor si, si
+					
+ 00BF				loop_find_path_start:
+ 00BF  8A 04				mov al, DS:[si]
+ 00C1  46				inc si
+ 00C2  3C 00				cmp al, 0h
+ 00C4  75 F9				jne loop_find_path_start
+ 00C6  8A 04				mov al, DS:[si]
+ 00C8  3C 00				cmp al, 0h
+ 00CA  75 F3				jne loop_find_path_start
+ 00CC  EB 01 90				jmp loop_find_path_end
+					
+ 00CF				loop_find_path_end:
+ 00CF  83 C6 03				add si, 3h
+ 00D2  33 DB				xor bx, bx
+ 00D4  56				push si
+					
+ 00D5				loop_find_end_path_1:
+ 00D5  8A 04				mov al, DS:[si]
+ 00D7  3C 00				cmp al, 0h
+ 00D9  74 04				je loop_find_end_path_2
+ 00DB  46				inc si
+ 00DC  43				inc bx
+ 00DD  EB F6				jmp loop_find_end_path_1
+					
+ 00DF				loop_find_end_path_2:
+ 00DF  8A 04				mov al, DS:[si]
+ 00E1  3C 5C				cmp al, '\'
+ 00E3  74 04				je loop_copy_path_start_1
+ 00E5  4E				dec si
+ 00E6  4B				dec bx
+ 00E7  EB F6				jmp loop_find_end_path_2
+				
+ 00E9				loop_copy_path_start_1:
+ 00E9  43				inc bx
+ 00EA  5E				pop si
+ 00EB				loop_copy_path_start_2:
+ 00EB  8A 04				mov al, DS:[si]
+ 00ED  26: 88 05			mov ES:[di], al
+ 00F0  47				inc di
+ 00F1  46				inc si
+ 00F2  4B				dec bx
+ 00F3  83 FB 00				cmp bx, 0h
+ 00F6  75 F3				jne loop_copy_path_start_2
+					
+ 00F8  26: C6 05 4C			mov byte ptr ES:[di], 'L'
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-7
+
+
+ 00FC  26: C6 45 01 41			mov byte ptr ES:[di + 1], 'A'
+ 0101  26: C6 45 02 42			mov byte ptr ES:[di + 2], 'B'
+ 0106  26: C6 45 03 32			mov byte ptr ES:[di + 3], '2'
+ 010B  26: C6 45 04 2E			mov byte ptr ES:[di + 4], '.'
+ 0110  26: C6 45 05 43			mov byte ptr ES:[di + 5], 'C'
+ 0115  26: C6 45 06 4F			mov byte ptr ES:[di + 6], 'O'
+ 011A  26: C6 45 07 4D			mov byte ptr ES:[di + 7], 'M'
+ 011F  26: C6 45 08 00			mov byte ptr ES:[di + 8], 0h
+					
+ 0124  07				pop es
+ 0125  1F				pop ds
+ 0126  5F				pop di
+ 0127  5E				pop si
+ 0128  5B				pop bx
+ 0129  58				pop ax
+					
+ 012A  C3				ret
+ 012B				SET_PATH_STRING ENDP
+				
+				; Проверка ошибок при вызо
+				ве прерываний
+ 012B				CHECK_AND_PRINT_ERROR PROC NEAR
+ 012B  50				push ax
+ 012C  73 67				jnc check_error_exit
+						
+ 012E  3D 0001				cmp ax, 01h
+ 0131  74 26				je error_code_1
+ 0133  3D 0002				cmp ax, 02h
+ 0136  74 27				je error_code_2
+ 0138  3D 0005				cmp ax, 05h
+ 013B  74 28				je error_code_5
+ 013D  3D 0007				cmp ax, 07h
+ 0140  74 29				je error_code_7
+ 0142  3D 0008				cmp ax, 08h
+ 0145  74 2A				je error_code_8
+ 0147  3D 0009				cmp ax, 09h
+ 014A  74 2B				je error_code_9
+ 014C  3D 000A				cmp ax, 0Ah
+ 014F  74 2C				je error_code_10
+ 0151  3D 000B				cmp ax, 0Bh
+ 0154  74 2D				je error_code_11
+ 0156  EB 31 90				jmp unknown_error
+				
+ 0159				error_code_1:
+ 0159  BA 0168 R			mov dx, offset ERROR_1_MESSAGE
+ 015C  EB 2E 90				jmp print_error
+ 015F				error_code_2:
+ 015F  BA 0193 R			mov dx, offset ERROR_2_MESSAGE
+ 0162  EB 28 90				jmp print_error
+ 0165				error_code_5:
+ 0165  BA 01B5 R			mov dx, offset ERROR_5_MESSAGE
+ 0168  EB 22 90				jmp print_error
+ 016B				error_code_7:
+ 016B  BA 01D3 R			mov dx, offset ERROR_7_MESSAGE
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-8
+
+
+ 016E  EB 1C 90				jmp print_error
+ 0171				error_code_8:
+ 0171  BA 0208 R			mov dx, offset ERROR_8_MESSAGE
+ 0174  EB 16 90				jmp print_error
+ 0177				error_code_9:
+ 0177  BA 0245 R			mov dx, offset ERROR_9_MESSAGE
+ 017A  EB 10 90				jmp print_error
+ 017D				error_code_10:
+ 017D  BA 0275 R			mov dx, offset ERROR_10_MESSAGE
+ 0180  EB 0A 90				jmp print_error
+ 0183				error_code_11:
+ 0183  BA 02A6 R			mov dx, offset ERROR_11_MESSAGE
+ 0186  EB 04 90				jmp print_error
+ 0189				unknown_error:
+ 0189  BA 02C9 R			mov dx, offset UNKNOWN_ERROR_MESSAGE
+					
+ 018C				print_error:
+ 018C  E8 01A6 R			call PRINT
+ 018F  32 C0				xor al, al
+ 0191  B4 4C				mov ah, 4Ch
+ 0193  CD 21				int 21h
+					
+ 0195				check_error_exit:
+ 0195  58				pop ax 
+ 0196  C3				ret
+ 0197				CHECK_AND_PRINT_ERROR ENDP
+				
+				; Очистка памяти
+ 0197				FREE_MEMORY PROC NEAR
+ 0197  50				push ax
+ 0198  53				push bx
+					
+ 0199  B4 4A				mov ah, 4Ah
+ 019B  BB 0100			 	mov bx, 100h
+ 019E  CD 21			 	int 21h
+ 01A0  E8 012B R			call CHECK_AND_PRINT_ERROR
+					
+ 01A3  5B				pop bx
+ 01A4  58				pop ax
+ 01A5  C3				ret
+ 01A6				FREE_MEMORY ENDP
+				
+				; Печать строки
+ 01A6				PRINT PROC NEAR
+ 01A6  50				push ax
+					
+ 01A7  B4 09				mov ah, 09h
+ 01A9  CD 21				int 21h
+					
+ 01AB  58				pop ax
+ 01AC  C3				ret
+ 01AD				PRINT ENDP
+				
+				
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Page     1-9
+
+
+ 01AD				BEGIN:
+ 01AD  B8 ---- R			mov ax, @data
+ 01B0  8E D8				mov ds, ax
+ 01B2  8C 06 0000 R			mov KEEP_PSP, es
+					
+ 01B6  E8 0197 R			call FREE_MEMORY
+ 01B9  E8 00A6 R			call SET_PATH_STRING
+ 01BC  E8 0023 R			call LOAD_MODULE
+				
+ 01BF  32 C0				xor al, al
+ 01C1  B4 4C				mov ah, 4Ch
+ 01C3  CD 21				int 21h
+					
+				END BEGIN
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	02DA	WORD	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	0100	PARA	STACK	'STACK'
+_TEXT  . . . . . . . . . . . . .  	01C5	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	01AD	_TEXT
+BYTE_TO_DEC  . . . . . . . . . .  	N PROC	0000	_TEXT	Length = 0023
+
+CALLED_MODULE_FINISH_CODE  . . .  	L BYTE	00B5	_DATA
+CALLED_MODULE_FINISH_MESSAGE . .  	L BYTE	0096	_DATA
+CALLED_MODULE_FINISH_REASON_0  .  	L BYTE	00E5	_DATA
+CALLED_MODULE_FINISH_REASON_1  .  	L BYTE	00FB	_DATA
+CALLED_MODULE_FINISH_REASON_2  .  	L BYTE	0118	_DATA
+CALLED_MODULE_FINISH_REASON_3  .  	L BYTE	0137	_DATA
+CALLED_MODULE_FINISH_REASON_MES   	L BYTE	00BB	_DATA
+CALLED_MODULE_FINISH_REASON_UNK   	L BYTE	0156	_DATA
+CHECK_AND_PRINT_ERROR  . . . . .  	N PROC	012B	_TEXT	Length = 006C
+CHECK_ERROR_EXIT . . . . . . . .  	L NEAR	0195	_TEXT
+COMMAND_STRING . . . . . . . . .  	L BYTE	0014	_DATA
+
+END_L  . . . . . . . . . . . . .  	L NEAR	0020	_TEXT
+ERROR_10_MESSAGE . . . . . . . .  	L BYTE	0275	_DATA
+ERROR_11_MESSAGE . . . . . . . .  	L BYTE	02A6	_DATA
+ERROR_1_MESSAGE  . . . . . . . .  	L BYTE	0168	_DATA
+ERROR_2_MESSAGE  . . . . . . . .  	L BYTE	0193	_DATA
+ERROR_5_MESSAGE  . . . . . . . .  	L BYTE	01B5	_DATA
+ERROR_7_MESSAGE  . . . . . . . .  	L BYTE	01D3	_DATA
+ERROR_8_MESSAGE  . . . . . . . .  	L BYTE	0208	_DATA
+ERROR_9_MESSAGE  . . . . . . . .  	L BYTE	0245	_DATA
+ERROR_CODE_1 . . . . . . . . . .  	L NEAR	0159	_TEXT
+ERROR_CODE_10  . . . . . . . . .  	L NEAR	017D	_TEXT
+ERROR_CODE_11  . . . . . . . . .  	L NEAR	0183	_TEXT
+ERROR_CODE_2 . . . . . . . . . .  	L NEAR	015F	_TEXT
+ERROR_CODE_5 . . . . . . . . . .  	L NEAR	0165	_TEXT
+ERROR_CODE_7 . . . . . . . . . .  	L NEAR	016B	_TEXT
+ERROR_CODE_8 . . . . . . . . . .  	L NEAR	0171	_TEXT
+ERROR_CODE_9 . . . . . . . . . .  	L NEAR	0177	_TEXT
+
+FREE_MEMORY  . . . . . . . . . .  	N PROC	0197	_TEXT	Length = 000F
+
+KEEP_PSP . . . . . . . . . . . .  	L WORD	0000	_DATA
+KEEP_SP  . . . . . . . . . . . .  	L WORD	0004	_DATA
+KEEP_SS  . . . . . . . . . . . .  	L WORD	0002	_DATA
+
+LOAD_MODULE  . . . . . . . . . .  	N PROC	0023	_TEXT	Length = 0083
+Microsoft (R) Macro Assembler Version 5.10                  4/28/21 03:30:56
+                                                             Symbols-2
+
+
+LOOP_BD  . . . . . . . . . . . .  	L NEAR	0009	_TEXT
+LOOP_COPY_PATH_START_1 . . . . .  	L NEAR	00E9	_TEXT
+LOOP_COPY_PATH_START_2 . . . . .  	L NEAR	00EB	_TEXT
+LOOP_FIND_END_PATH_1 . . . . . .  	L NEAR	00D5	_TEXT
+LOOP_FIND_END_PATH_2 . . . . . .  	L NEAR	00DF	_TEXT
+LOOP_FIND_PATH_END . . . . . . .  	L NEAR	00CF	_TEXT
+LOOP_FIND_PATH_START . . . . . .  	L NEAR	00BF	_TEXT
+
+PARAMETERS_BLOCK . . . . . . . .  	L WORD	0006	_DATA
+PATH . . . . . . . . . . . . . .  	L BYTE	0016	_DATA	Length = 0080
+PRINT  . . . . . . . . . . . . .  	N PROC	01A6	_TEXT	Length = 0007
+PRINT_ERROR  . . . . . . . . . .  	L NEAR	018C	_TEXT
+
+REASON_0 . . . . . . . . . . . .  	L NEAR	0077	_TEXT
+REASON_1 . . . . . . . . . . . .  	L NEAR	0089	_TEXT
+REASON_2 . . . . . . . . . . . .  	L NEAR	008F	_TEXT
+REASON_3 . . . . . . . . . . . .  	L NEAR	0095	_TEXT
+REASON_PRINT . . . . . . . . . .  	L NEAR	009E	_TEXT
+REASON_UNKNOWN . . . . . . . . .  	L NEAR	009B	_TEXT
+
+SET_PATH_STRING  . . . . . . . .  	N PROC	00A6	_TEXT	Length = 0085
+
+UNKNOWN_ERROR  . . . . . . . . .  	L NEAR	0189	_TEXT
+UNKNOWN_ERROR_MESSAGE  . . . . .  	L BYTE	02C9	_DATA
+
+@CODE  . . . . . . . . . . . . .  	TEXT  _TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  0		
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@DATASIZE  . . . . . . . . . . .  	TEXT  0		
+@FILENAME  . . . . . . . . . . .  	TEXT  LAB6		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    321 Source  Lines
+    321 Total   Lines
+     72 Symbols
+
+  47738 + 445186 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors
